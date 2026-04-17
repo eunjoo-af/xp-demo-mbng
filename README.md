@@ -5,7 +5,7 @@
 A React + Vite demo landing page integrating AppsFlyer Smart Script (Cross-platform Landing Page).  
 Demonstrates impression firing and per-platform Direct Click URL generation for attribution tracking across iOS, Android, Galaxy Store, and PC.
 
-**Live demo:** https://eunjoo.github.io/xp-demo-mbng/
+**Live demo:** https://eunjoo-af.github.io/xp-demo-mbng/
 
 ---
 
