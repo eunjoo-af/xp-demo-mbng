@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MBNG · Cross-platform Landing Page Demo</title>
+
+    <!--
+      AppsFlyer Smart Script (Cross-platform landing page)
+      CDN URL: https://onelinksmartscript.appsflyer.com/onelink-smart-script-latest.js
+
+      [SRI Readiness]
+      When AppsFlyer officially releases SRI (Sub-Resource Integrity) support,
+      apply the following two steps:
+
+      Step 1. Replace the "latest" URL with the version-pinned URL provided by AppsFlyer.
+              Example: .../onelink-smart-script-2.x.x.js
+
+      Step 2. Add the following two attributes to the script tag below:
+              integrity="sha384-<hash provided by AppsFlyer>"
+              crossorigin="anonymous"
+
+      Final form after applying SRI:
+      <script
+        src="https://onelinksmartscript.appsflyer.com/onelink-smart-script-2.x.x.js"
+        integrity="sha384-AAABBBCCC..."
+        crossorigin="anonymous"
+      ></script>
+
+      Note: Never compute the integrity hash manually.
+      Always use the value from the official AppsFlyer communication.
+    -->
+    <script
+      src="https://onelinksmartscript.appsflyer.com/onelink-smart-script-latest.js"
+    ></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
