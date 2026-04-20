@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Menu, Home, Youtube, MessageCircle, Share2, X, Play, Monitor, Apple, PlayCircle, Star } from 'lucide-react';
+import { Menu, Home, Youtube, MessageCircle, Share2, X, Play, Monitor, Apple, PlayCircle, Star, Copy, Check } from 'lucide-react';
 import { motion } from 'motion/react';
 import mabinogiBg from '../public/mabinogi_bg.png';
 
@@ -78,8 +78,46 @@ export default function App() {
   const [impressionURL, setImpressionURL] = useState<string | null>(null);
   const [showImpression, setShowImpression] = useState(false);
 
-  // CTA hover panel
-  const [hoveredCta, setHoveredCta] = useState<{ label: string; url: string } | null>(null);
+  // CTA click panels — persists after mouse leave, supports multiple open panels
+  const [ctaPanels, setCtaPanels] = useState<Array<{ id: number; label: string; url: string; zIndex: number }>>([]);
+  const [zCounter, setZCounter] = useState(120);
+
+  const openCtaPanel = (label: string, url: string) => {
+    setZCounter((prev) => {
+      const newZ = prev + 1;
+      setCtaPanels((panels) => {
+        // If panel for this platform already open, bring to front
+        const exists = panels.find((p) => p.label === label);
+        if (exists) {
+          return panels.map((p) => p.label === label ? { ...p, zIndex: newZ } : p);
+        }
+        return [...panels, { id: Date.now(), label, url, zIndex: newZ }];
+      });
+      return newZ;
+    });
+  };
+
+  const closeCtaPanel = (id: number) => {
+    setCtaPanels((panels) => panels.filter((p) => p.id !== id));
+  };
+
+  const bringToFront = (id: number) => {
+    setZCounter((prev) => {
+      const newZ = prev + 1;
+      setCtaPanels((panels) => panels.map((p) => p.id === id ? { ...p, zIndex: newZ } : p));
+      return newZ;
+    });
+  };
+
+  // Clipboard copy state
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const handleCopy = (url: string, key: string) => {
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 2000);
+    });
+  };
 
   useEffect(() => {
     // Verify window.AF_SMART_SCRIPT is available
@@ -95,7 +133,6 @@ export default function App() {
     const afParameters: Record<string, unknown> = {
       mediaSource:      { keys: ['utm_source'],                        defaultValue: 'game_media_source' },
       campaign:         { keys: ['utm_campaign', 'campaign_name'],     defaultValue: 'game_landing_page' },
-      campaignId:       { keys: ['utm_medium'] },
       channel:          { keys: ['inchnl'] },
       ad:               { keys: ['utm_content', 'ad_name'],            defaultValue: 'game_ad_name' },
       adSet:            { keys: ['utm_term', 'adset_name'],             defaultValue: 'game_adset_name' },
@@ -104,8 +141,7 @@ export default function App() {
       afCustom: [
         // Required for cross-platform attribution. Included in impression link only.
         { paramKey: 'af_xplatform', keys: [], defaultValue: 'true' },
-        { paramKey: 'gclid',  keys: ['gclid'] },
-        { paramKey: 'fbclid', keys: ['fbclid'] },
+        { paramKey: 'af_media_type', keys: ['utm_medium'] },
       ],
     };
 
@@ -246,8 +282,7 @@ export default function App() {
               href={ctaLinks.ios ?? '#'}
               target="_blank"
               rel="noreferrer"
-              onMouseEnter={() => ctaLinks.ios && setHoveredCta({ label: CTA_LABELS.ios, url: ctaLinks.ios })}
-              onMouseLeave={() => setHoveredCta(null)}
+              onMouseEnter={() => ctaLinks.ios && openCtaPanel(CTA_LABELS.ios, ctaLinks.ios)}
               className="w-full bg-black text-white rounded-md flex items-center px-3 py-2 gap-3 hover:bg-gray-800 transition-all active:scale-95"
             >
               <Apple size={20} />
@@ -261,8 +296,7 @@ export default function App() {
               href={ctaLinks.android ?? '#'}
               target="_blank"
               rel="noreferrer"
-              onMouseEnter={() => ctaLinks.android && setHoveredCta({ label: CTA_LABELS.android, url: ctaLinks.android })}
-              onMouseLeave={() => setHoveredCta(null)}
+              onMouseEnter={() => ctaLinks.android && openCtaPanel(CTA_LABELS.android, ctaLinks.android)}
               className="w-full bg-black text-white rounded-md flex items-center px-3 py-2 gap-3 hover:bg-gray-800 transition-all active:scale-95"
             >
               <PlayCircle size={20} />
@@ -276,8 +310,7 @@ export default function App() {
               href={ctaLinks.galaxy ?? '#'}
               target="_blank"
               rel="noreferrer"
-              onMouseEnter={() => ctaLinks.galaxy && setHoveredCta({ label: CTA_LABELS.galaxy, url: ctaLinks.galaxy })}
-              onMouseLeave={() => setHoveredCta(null)}
+              onMouseEnter={() => ctaLinks.galaxy && openCtaPanel(CTA_LABELS.galaxy, ctaLinks.galaxy)}
               className="w-full bg-black text-white rounded-md flex items-center px-3 py-2 gap-3 hover:bg-gray-800 transition-all active:scale-95 border border-pink-500/30"
             >
               <Star size={20} className="text-pink-500" />
@@ -291,8 +324,7 @@ export default function App() {
               href={ctaLinks.nativepc ?? '#'}
               target="_blank"
               rel="noreferrer"
-              onMouseEnter={() => ctaLinks.nativepc && setHoveredCta({ label: CTA_LABELS.nativepc, url: ctaLinks.nativepc })}
-              onMouseLeave={() => setHoveredCta(null)}
+              onMouseEnter={() => ctaLinks.nativepc && openCtaPanel(CTA_LABELS.nativepc, ctaLinks.nativepc)}
               className="w-full bg-black text-white rounded-md flex items-center px-3 py-2 gap-3 hover:bg-gray-800 transition-all active:scale-95"
             >
               <Monitor size={20} />
@@ -426,12 +458,21 @@ export default function App() {
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                   <span className="text-emerald-400 font-bold text-base tracking-wide">IMPRESSION FIRED</span>
                 </div>
-                <button
-                  onClick={() => setShowImpression(false)}
-                  className="text-gray-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
-                >
-                  <X size={20} />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => impressionURL && handleCopy(impressionURL, 'impression')}
+                    className="text-gray-400 hover:text-emerald-400 transition-colors p-1 rounded-lg hover:bg-white/10"
+                    title="Copy URL"
+                  >
+                    {copiedKey === 'impression' ? <Check size={18} className="text-emerald-400" /> : <Copy size={18} />}
+                  </button>
+                  <button
+                    onClick={() => setShowImpression(false)}
+                    className="text-gray-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
               </div>
 
               {/* Full URL display */}
@@ -465,31 +506,52 @@ export default function App() {
         )}
 
         {/* ============================================================
-            CTA button hover panel
-            Shown on mouse enter, hidden on mouse leave
+            CTA click panels
+            Opens on mouse enter, persists until closed via X button
+            Each platform has its own panel with independent z-index
         ============================================================ */}
-        {hoveredCta && (
+        {ctaPanels.map((panel) => (
           <motion.div
+            key={panel.id}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.15 }}
-            className="absolute inset-0 flex items-center justify-center z-[110] pointer-events-none"
+            style={{ zIndex: panel.zIndex }}
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            onClick={() => bringToFront(panel.id)}
           >
-            <div className="w-[680px] max-w-[90vw] bg-gray-950/95 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-500/40 p-6">
+            <div className="pointer-events-auto w-[680px] max-w-[90vw] bg-gray-950/95 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-500/40 p-6">
               {/* Header */}
-              <div className="flex items-center gap-2 mb-4">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
-                <span className="text-blue-400 font-bold text-base tracking-wide">
-                  CLICK URL &nbsp;·&nbsp; {hoveredCta.label}
-                </span>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+                  <span className="text-blue-400 font-bold text-base tracking-wide">
+                    CLICK URL &nbsp;·&nbsp; {panel.label}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleCopy(panel.url, `cta-${panel.id}`)}
+                    className="text-gray-400 hover:text-blue-400 transition-colors p-1 rounded-lg hover:bg-white/10"
+                    title="Copy URL"
+                  >
+                    {copiedKey === `cta-${panel.id}` ? <Check size={18} className="text-blue-400" /> : <Copy size={18} />}
+                  </button>
+                  <button
+                    onClick={() => closeCtaPanel(panel.id)}
+                    className="text-gray-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
               </div>
 
               {/* Full URL display */}
               <div className="bg-black/50 rounded-xl p-4 border border-gray-700">
                 <div className="text-[12px] text-gray-500 font-mono mb-2 uppercase tracking-widest">Direct Click URL</div>
                 <p className="text-blue-300 font-mono text-[13px] leading-relaxed break-all">
-                  {hoveredCta.url}
+                  {panel.url}
                 </p>
               </div>
 
@@ -497,7 +559,7 @@ export default function App() {
               <div className="mt-4 grid grid-cols-2 gap-2">
                 {(() => {
                   try {
-                    const urlObj = new URL(hoveredCta.url);
+                    const urlObj = new URL(panel.url);
                     const EXCLUDE = new Set(['af_js_web', 'af_ss_ver']);
                     const params = Array.from(urlObj.searchParams.entries()).filter(([k]) => !EXCLUDE.has(k));
                     return params.map(([k, v]) => (
@@ -513,7 +575,7 @@ export default function App() {
               </div>
             </div>
           </motion.div>
-        )}
+        ))}
 
         {/* Close button at top left of content area */}
         <button className="absolute top-2 left-[268px] w-8 h-8 bg-black/20 hover:bg-black/40 text-white rounded-full flex items-center justify-center transition-colors z-50">
