@@ -40,7 +40,7 @@ const PLATFORMS = {
   ios: {
     platformName: 'ios',
     appid: 'id1111742921',
-    redirectURL: 'https://apps.apple.com/kr/app/id1441742921',
+    redirectURL: 'https://apps.apple.com/kr/app/id1111742921',
   },
   android: {
     platformName: 'android',
