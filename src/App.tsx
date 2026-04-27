@@ -130,10 +130,25 @@ export default function App() {
     // Attribution parameter definitions
     // Reads UTM parameters from the incoming URL, falls back to defaultValue
     // ---------------------------------------------------------------
+
+    // utm_medium → af_channel mapping:
+    // Integrated sources (SRN) manage their own channel attribution,
+    // so af_channel is only set from utm_medium for non-integrated sources.
+    const INTEGRATED_SOURCES = new Set([
+      'googleads_int',
+      'metaweb_int',
+      'tiktokweb_int',
+      'snapchat_int',
+    ]);
+    const utmSource = new URLSearchParams(window.location.search).get('utm_source') ?? '';
+    const channelKeys = INTEGRATED_SOURCES.has(utmSource)
+      ? ['inchnl']
+      : ['inchnl', 'utm_medium'];
+
     const afParameters: Record<string, unknown> = {
       mediaSource:      { keys: ['utm_source'],                        defaultValue: 'game_media_source' },
       campaign:         { keys: ['utm_campaign', 'campaign_name'],     defaultValue: 'game_landing_page' },
-      channel:          { keys: ['inchnl'] },
+      channel:          { keys: channelKeys },
       ad:               { keys: ['utm_content', 'ad_name'],            defaultValue: 'game_ad_name' },
       adSet:            { keys: ['utm_term', 'adset_name'],             defaultValue: 'game_adset_name' },
       afSub2:           { keys: ['fbclid'] },
