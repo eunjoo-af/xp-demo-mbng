@@ -9,8 +9,12 @@ import {
   Apple, PlayCircle, Star, Monitor, Backpack, Swords, RefreshCw,
   Sparkles, Shield, Award, Gem, BookOpen, Copy, Check, X,
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import mabinogiBg from '../public/mabinogi_bg.png';
+import pcBanner01 from '../public/pcbanner01.png';
+import pcBanner02 from '../public/pcbanner02.png';
+import pcBanner03 from '../public/pcbanner03.png';
+import pcBanner04 from '../public/pcbanner04.png';
 
 // ---------------------------------------------------------------
 // Type declaration for window.AF_SMART_SCRIPT
@@ -83,23 +87,27 @@ const GNB_ITEMS = ['에린 소식', '게임 소개', '커뮤니티', '랭킹', '
 const HERO_SLIDES = [
   {
     tag: '이벤트',
-    title: ['감사의 마음을 모아', '1주년 페스티벌'],
-    desc: '에린에서의 지난 1년을 함께한 모험가님들께 감사드리며, 다양한 기념 미션과 선물을 준비했습니다!',
+    title: '함께했던 여름을 추억하며',
+    desc: "에린에서의 여름을 돌아보며 이벤트 미션을 클리어해 보세요. '행동: 버블티마시기'와 다양한 선물을 받으실 수 있습니다!",
+    image: pcBanner01,
   },
   {
     tag: '이벤트',
-    title: ['1주년', '스페셜 위크'],
-    desc: '매일 접속하고 스페셜 위크 미션을 클리어해 특별한 보상을 받아보세요.',
+    title: '꼬박꼬박 일일미션',
+    desc: "일일미션을 클리어하고 '두근두근 연금술 재연소 촉매 상자'를 받아보세요!",
+    image: pcBanner02,
   },
   {
     tag: '업데이트',
-    title: ['1주년 기념', '업데이트 안내'],
-    desc: '신규 서버 <클라> 오픈 및 주요 업데이트 소식을 확인해보세요.',
+    title: '8/27(목) 업데이트 안내',
+    desc: '업데이트 소식을 알려드려요.',
+    image: pcBanner03,
   },
   {
     tag: '이벤트',
-    title: ['최대 33만원 상당 혜택', '1주년 혜택 페스타'],
-    desc: '넥슨 현대카드 Ed.2 마비노기 모바일팩 등 다양한 혜택을 만나보세요.',
+    title: '쾌적한 바다를 위한 청소!',
+    desc: '몬스터를 처치해 미션을 달성하고, 이벤트 선물을 획득해 보세요!',
+    image: pcBanner04,
   },
 ];
 
@@ -383,10 +391,17 @@ export default function App() {
           Hero event banner (carousel, visual only)
       ============================================================ */}
       <section className="relative w-full h-[380px] overflow-hidden bg-gray-900">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${mabinogiBg})` }}
-        />
+        <AnimatePresence>
+          <motion.div
+            key={activeSlide}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.7, ease: 'easeInOut' }}
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${slide.image})` }}
+          />
+        </AnimatePresence>
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
 
         <div className="relative max-w-[1200px] mx-auto h-full flex flex-col justify-center px-4">
@@ -401,7 +416,7 @@ export default function App() {
               {slide.tag}
             </span>
             <h2 className="text-4xl font-black text-white leading-tight mb-4 drop-shadow-[0_3px_10px_rgba(0,0,0,0.5)]">
-              {slide.title[0]}<br />{slide.title[1]}
+              {slide.title}
             </h2>
             <p className="text-[13px] text-white/80 leading-relaxed max-w-md">
               {slide.desc}
@@ -440,7 +455,7 @@ export default function App() {
                   {String(i + 1).padStart(2, '0')}
                 </div>
                 <div className={`text-[12px] truncate ${i === activeSlide ? 'text-gray-900 font-bold' : 'text-gray-500'}`}>
-                  {s.title.join(' ')}
+                  {s.title}
                 </div>
               </button>
             ))}
